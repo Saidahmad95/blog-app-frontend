@@ -1,23 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Home from "./Components/Home/Home";
+import User from "./Components/User/User";
+import NavBar from "./Components/NavBar/NavBar";
+import PostForm from "./Components/Post/PostForm";
+
+
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-       Hello world salam
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+   
+      <BrowserRouter>
+      <NavBar></NavBar>
+        <Routes>
+          <Route path="/" element={<Home/>}></Route>
+          <Route path="/users/:usersId" element={<User/>}></Route>
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
