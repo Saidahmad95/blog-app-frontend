@@ -13,16 +13,21 @@ function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [postList, setPostList] = useState([]);
 
+  const refreshPosts=()=>{
+    axios.get("/posts/all")
+    .then((result) => {
+      setIsLoaded(true);
+      setPostList(result.data);
+    })
+    .catch((error) => {
+      setIsLoaded(true);
+      setError(error);
+    
+    });
+  }
+
   useEffect(() => {
-    axios("/posts/all")
-      .then((result) => {
-        setIsLoaded(true);
-        setPostList(result.data);
-      })
-      .catch((error) => {
-        setIsLoaded(true);
-        setError(error);
-      });
+    refreshPosts()
   }, []);
 
   if (error) {
@@ -47,11 +52,13 @@ function Home() {
         title={'title'}
         text={'text'}
         userId={1}
-        username={'username'}/>
+        username={'username'}
+        refreshPosts={refreshPosts}/>
         {postList.map((post) => (
           <Post
             style={postStyle}
             title={post.title}
+            postId={post.id}
             text={post.text}
             userId={post.userId}
             username={post.username}

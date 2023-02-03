@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
@@ -9,8 +9,13 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { styled } from "@mui/material/styles";
-import { Comment } from "@mui/icons-material";
+
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { Container } from "@mui/material";
+import Comment from "../Comment/Comment";
+import { CommentBank, CommentBankOutlined } from "@mui/icons-material";
+import CommentForm from "../Comment/CommentForm";
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -24,19 +29,47 @@ const ExpandMore = styled((props) => {
 }));
 
 function Post(props) {
-  const { title, text, userId, username } = props;
+  const { title, text, userId, username, postId } = props;
 
   const [expanded, setExpanded] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [commentList, setCommentList] = useState([]);
+  const isInitialMount = useRef(true);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
+    refreshComments();
+    console.log(commentList);
+    console.log("handleExpanClick");
   };
 
   const handleLikeClick = () => {
     setLiked(!liked);
     console.log(liked);
   };
+
+  const refreshComments = async () => {
+    await axios
+      .get("/comments/all?postId=" + postId)
+      .then((result) => {
+        setIsLoaded(true);
+        setCommentList(result.data);
+      })
+      .catch((error) => {
+        setIsLoaded(true);
+        setError(error);
+      });
+  };
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      refreshComments();
+    }
+  }, []);
 
   return (
     <div className="postContainer">
@@ -70,11 +103,24 @@ function Post(props) {
             aria-expanded={expanded}
             aria-label="show more"
           >
-            <Comment />
+            <CommentBankOutlined/>
           </ExpandMore>
         </CardActions>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <CardContent></CardContent>
+          <Container fixed>
+            {error
+              ? "error"
+              : isLoaded
+              ? commentList.map((comment) => (
+                  <Comment
+                    userId={1}
+                    username={"USER"}
+                    text={comment.text}
+                  ></Comment>
+                ))
+              : "Loading ..."}
+              <CommentForm/>
+          </Container>
         </Collapse>
       </Card>
     </div>
