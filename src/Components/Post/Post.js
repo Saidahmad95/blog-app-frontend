@@ -29,13 +29,15 @@ const ExpandMore = styled((props) => {
 }));
 
 function Post(props) {
-  const { title, text, userId, username, postId } = props;
+  const { title, text, userId, username, postId, likes } = props;
 
   const [expanded, setExpanded] = useState(false);
-  const [liked, setLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [commentList, setCommentList] = useState([]);
+  const [likeCount, setLikeCount] = useState(likes.length);
+  const [likeId,setLikeId]=useState(null)
   const isInitialMount = useRef(true);
 
   const handleExpandClick = () => {
@@ -46,12 +48,29 @@ function Post(props) {
   };
 
   const handleLikeClick = () => {
-    setLiked(!liked);
-    console.log(liked);
+    setIsLiked(!isLiked);
+    if (!isLiked) {
+      saveLike();
+      setLikeCount(likeCount + 1);
+    }else{
+        deleteLike();
+        setLikeCount(likeCount-1);
+
+    }
+    // saveLike();
   };
 
-  const refreshComments = async () => {
-    await axios
+  const checkLikes = () => {
+    var likeControl = likes.find((like) => like.userId === userId);
+    if (likeControl != null) {
+    setLikeId(likeControl.id) ;
+      setIsLiked(true);
+      console.log("LikeId: "+likeId)
+    }
+  };
+
+  const refreshComments =  () => {
+     axios
       .get("/comments/all?postId=" + postId)
       .then((result) => {
         setIsLoaded(true);
@@ -61,6 +80,33 @@ function Post(props) {
         setIsLoaded(true);
         setError(error);
       });
+      
+  };
+
+  const saveLike = () => {
+    const data = JSON.stringify({
+      postId: postId,
+      userId: userId,
+    });
+
+    console.log("DATA: " + data);
+
+    const headers = {
+      "Content-type": "application/json",
+    };
+    axios
+      .post("/likes", data, { headers })
+      .then((res) => console.log("RES: " + res))
+      .catch((err) => console.log("ERROR: " + err));
+  };
+
+  const deleteLike = () => {
+    const headers = {
+      "Content-type": "application/json",
+    };
+    axios
+      .delete("/likes/"+likeId,  { headers })
+      .catch((err) => console.log("ERROR: " + err));
   };
 
   useEffect(() => {
@@ -69,6 +115,10 @@ function Post(props) {
     } else {
       refreshComments();
     }
+  }, []);
+
+  useEffect(() => {
+    checkLikes();
   }, []);
 
   return (
@@ -94,16 +144,16 @@ function Post(props) {
         </CardContent>
         <CardActions disableSpacing>
           <IconButton onClick={handleLikeClick} aria-label="add to favorites">
-            <FavoriteIcon style={liked ? { color: "red" } : null} />
+            <FavoriteIcon style={isLiked ? { color: "red" } : null} />
           </IconButton>
-
+          {likeCount}
           <ExpandMore
             expand={expanded}
             onClick={handleExpandClick}
             aria-expanded={expanded}
             aria-label="show more"
           >
-            <CommentBankOutlined/>
+            <CommentBankOutlined />
           </ExpandMore>
         </CardActions>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -116,10 +166,15 @@ function Post(props) {
                     userId={1}
                     username={"USER"}
                     text={comment.text}
+                    postId={postId}
                   ></Comment>
                 ))
               : "Loading ..."}
-              <CommentForm/>
+            <CommentForm
+              userId={1}
+              postId={postId}
+              refreshComments={refreshComments}
+            />
           </Container>
         </Collapse>
       </Card>

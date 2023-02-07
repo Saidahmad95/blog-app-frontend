@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 function PostForm(props) {
-  const { userId, username } = props;
+  const { userId, username, refreshPosts } = props;
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [isSent, setIsSent] = useState(false);
@@ -25,7 +25,7 @@ function PostForm(props) {
     setIsSent(true);
     setTitle("");
     setText("");
-    props.refreshPosts();
+    refreshPosts();
   };
 
   const handleTitle = (value) => {
@@ -54,8 +54,13 @@ function PostForm(props) {
       .catch((err) => console.log("ERROR: " + err));
   };
 
+  
+  useEffect(() => {
+    refreshPosts()
+  }, []);
+
   return (
-    <div className="postContainer" >
+    <div className="postContainer">
       <Snackbar
         open={isSent}
         autoHideDuration={6000}
@@ -67,7 +72,9 @@ function PostForm(props) {
           <h3> Post created successfully</h3>
         </Alert>
       </Snackbar>
-      <Card sx={{ width: 800, textAlign: "left", margin: 1 ,bgcolor:"#eaf4f4"}}>
+      <Card
+        sx={{ width: 800, textAlign: "left", margin: 1, bgcolor: "#eaf4f4" }}
+      >
         <CardHeader
           avatar={
             <Link
@@ -88,7 +95,7 @@ function PostForm(props) {
               inputProps={{ maxlength: 25 }}
               fullWidth
               onChange={(i) => handleTitle(i.target.value)}
-            sx={{bgcolor:"white"}}
+              sx={{ bgcolor: "white" }}
             ></OutlinedInput>
           }
         />
@@ -103,7 +110,7 @@ function PostForm(props) {
                 inputProps={{ maxlength: 250 }}
                 fullWidth
                 onChange={(i) => handleText(i.target.value)}
-                sx={{bgcolor:"white"}}
+                sx={{ bgcolor: "white" }}
                 endAdornment={
                   <InputAdornment>
                     <Button

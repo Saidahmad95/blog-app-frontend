@@ -62,6 +62,7 @@ function Home() {
             text={post.text}
             userId={post.userId}
             username={post.username}
+            likes={post.postLikes}
           />
         ))}
       </Container>

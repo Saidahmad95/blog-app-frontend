@@ -9,7 +9,7 @@ import {
 import { Link } from "react-router-dom";
 
 function Comment(props) {
-  const { text, userId, username } = props;
+  const { text, userId, username,postd } = props;
   const commentSyle = {
     display: "flex",
     flexWrap: "wrap",
